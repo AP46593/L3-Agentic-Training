@@ -1,0 +1,43 @@
+# ============================================
+# Agentic AI Training - Requirements
+# Python 3.14.4
+# ============================================
+
+# --- Core Utilities ---
+python-dotenv>=1.0.0
+pydantic>=2.7.0
+pypdf>=4.2.0
+python-docx>=1.1.0
+httpx>=0.27.0
+requests>=2.31.0
+rich>=13.7.0
+
+# --- LangChain Ecosystem ---
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-ollama
+langchain-community>=0.2.0
+langgraph>=0.1.0
+
+# --- Vector Stores ---
+faiss-cpu>=1.8.0
+chromadb>=0.5.0
+
+# --- MCP (Model Context Protocol) ---
+mcp>=1.0.0
+
+# --- Observability ---
+langsmith>=0.1.80
+
+# --- Jupyter / Notebooks ---
+jupyter>=1.0.0
+ipykernel>=6.29.0
+
+# --- Graph Database ---
+neo4j>=5.19.0
+langchain-neo4j>=0.1.0
+
+# --- CrewAI (requires Python <3.14) ---
+# crewai>=0.30.0
+# crewai-tools>=0.4.0
+# NOTE: Uncomment above if using Python 3.10-3.13
