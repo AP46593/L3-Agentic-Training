@@ -1,0 +1,12 @@
+[project]
+name = "l3-agentic-training"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "l3june26_ap",
+]

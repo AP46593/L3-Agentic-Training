@@ -19,19 +19,25 @@
 | CLI/Output | Rich |
 | Notebooks | Jupyter, ipykernel |
 
+## Package Manager
+- **uv** — fast Python package & project manager (replaces pip + venv)
+- Install uv: https://docs.astral.sh/uv/getting-started/installation/
+
 ## Environment Setup
 ```bash
-python -m venv .venv
+uv venv .venv
 .venv\Scripts\activate       # Windows
-pip install -r L3-Agentic-Training/requirements.txt
+uv pip install -r L3-Agentic-Training/requirements.txt
 ```
 
 ## Common Commands
 | Action | Command |
 |--------|---------|
+| Create venv | `uv venv .venv` |
 | Activate venv (Windows) | `.venv\Scripts\activate` |
 | Activate venv (Linux/Mac) | `source .venv/bin/activate` |
-| Install deps | `pip install -r L3-Agentic-Training/requirements.txt` |
+| Install deps | `uv pip install -r L3-Agentic-Training/requirements.txt` |
+| Add a package | `uv pip install <package>` |
 | Run notebook | `jupyter notebook` |
 | Run script | `python <script>.py` |
 
