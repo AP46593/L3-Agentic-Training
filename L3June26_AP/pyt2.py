@@ -6,7 +6,7 @@ User provides a city to get weather for.
 """
 
 from langchain_ollama import ChatOllama
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 from tools import get_weather
 
 # --- Configuration ---
@@ -23,10 +23,10 @@ llm = ChatOllama(
     num_predict=MAX_TOKENS
 )
 
-agent = create_react_agent(
+agent = create_agent(
     model=llm,
     tools=[get_weather],
-    prompt=SYSTEM_MESSAGE
+    system_prompt=SYSTEM_MESSAGE
 )
 
 

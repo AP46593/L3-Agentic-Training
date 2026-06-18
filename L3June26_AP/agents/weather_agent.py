@@ -5,7 +5,7 @@ Uses get_weather tool to fetch real weather data from Open-Meteo.
 """
 
 from langchain_ollama import ChatOllama
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 from tools import get_weather
 
 # --- Configuration ---
@@ -25,17 +25,24 @@ llm = ChatOllama(
     num_predict=MAX_TOKENS
 )
 
-agent = create_react_agent(
+agent = create_agent(
     model=llm,
     tools=[get_weather],
-    prompt=SYSTEM_MESSAGE
+    system_prompt=SYSTEM_MESSAGE
 )
 
 
 def run(query: str) -> str:
     """Run the weather agent and return the final response as a string."""
     result = agent.invoke({"messages": [{"role": "user", "content": query}]})
-    # Return the last AI message with content
+    # Log internal tool calls
+    for msg in result["messages"]:
+        if msg.type == "ai" and msg.tool_calls:
+            for tc in msg.tool_calls:
+                print(f"    [Weather Agent → Tool Call] {tc['name']}({tc['args']})")
+        elif msg.type == "tool":
+            print(f"    [Weather Agent ← Tool Result] {msg.content}")
+    # Return final AI message
     for msg in reversed(result["messages"]):
         if msg.type == "ai" and msg.content:
             return msg.content
