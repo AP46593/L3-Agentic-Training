@@ -2,6 +2,7 @@
 weather.py - Tool to fetch current weather for a city using Open-Meteo API.
 """
 
+import unicodedata
 import requests
 import urllib3
 from langchain_core.tools import tool
@@ -10,21 +11,37 @@ from langchain_core.tools import tool
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
+def _normalize(text: str) -> str:
+    """Strip diacritics and take only the city name (before comma)."""
+    # Take first part if comma-separated (e.g., "Willemstad, Curaçao" → "Willemstad")
+    city_name = text.split(",")[0].strip()
+    # Remove diacritics (e.g., ç → c)
+    nfkd = unicodedata.normalize("NFKD", city_name)
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+
 @tool
 def get_weather(city: str) -> str:
     """Get the current weather for a given city."""
     try:
-        # Step 1: Geocode city name to coordinates
-        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
-        geo = requests.get(geo_url, verify=False).json()
+        # Try original city name first, then normalized version
+        attempts = [city, _normalize(city)]
+        geo_result = None
 
-        if not geo.get("results"):
+        for attempt in attempts:
+            geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={attempt}&count=1"
+            geo = requests.get(geo_url, verify=False).json()
+            if geo.get("results"):
+                geo_result = geo["results"][0]
+                break
+
+        if not geo_result:
             return f"Could not find location: {city}"
 
-        lat = geo["results"][0]["latitude"]
-        lon = geo["results"][0]["longitude"]
+        lat = geo_result["latitude"]
+        lon = geo_result["longitude"]
 
-        # Step 2: Fetch current weather
+        # Fetch current weather
         weather_url = (
             f"https://api.open-meteo.com/v1/forecast"
             f"?latitude={lat}&longitude={lon}&current_weather=true"
