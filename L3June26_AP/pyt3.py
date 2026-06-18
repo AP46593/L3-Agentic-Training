@@ -39,16 +39,31 @@ orchestrator = create_agent(
 )
 
 
+# --- Conversation Memory ---
+conversation_history = []
+
+
 def chat(user_input: str):
     print(f"\n{'='*60}")
     print(f"[User] {user_input}")
     print(f"{'='*60}")
 
-    result = orchestrator.invoke({"messages": [{"role": "user", "content": user_input}]})
+    # Add user message to history
+    conversation_history.append({"role": "user", "content": user_input})
+
+    result = orchestrator.invoke({"messages": conversation_history})
+
+    # Find the last AI message with content (that's the final answer)
+    final_answer_idx = None
+    for i in range(len(result["messages"]) - 1, -1, -1):
+        msg = result["messages"][i]
+        if msg.type == "ai" and msg.content and not msg.tool_calls:
+            final_answer_idx = i
+            break
 
     for i, msg in enumerate(result["messages"]):
         if msg.type == "human":
-            continue  # Already printed above
+            continue
         elif msg.type == "ai" and msg.tool_calls:
             print(f"\n[Orchestrator → Delegating]")
             for tc in msg.tool_calls:
@@ -56,10 +71,13 @@ def chat(user_input: str):
                 print(f"  Args: {tc['args']}")
         elif msg.type == "tool":
             print(f"\n[Agent Response ← {msg.name}]")
-            print(f"  {msg.content}")
+            print(f"  {msg.content[:300]}")
         elif msg.type == "ai" and msg.content:
-            print(f"\n[Orchestrator → Final Answer]")
-            print(f"  {msg.content}")
+            if i == final_answer_idx:
+                print(f"\n[Orchestrator → Final Answer]")
+                print(f"  {msg.content}")
+                # Add assistant response to history
+                conversation_history.append({"role": "assistant", "content": msg.content})
 
     print(f"\n{'='*60}")
 
