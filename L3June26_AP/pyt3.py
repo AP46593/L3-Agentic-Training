@@ -7,7 +7,7 @@ More agents can be added as tools over time.
 
 from langchain_ollama import ChatOllama
 from langchain.agents import create_agent
-from tools.agent_tools import ask_weather_agent, ask_calc_agent, ask_stock_agent
+from tools.agent_tools import ask_weather_agent, ask_calc_agent, ask_stock_agent, ask_web_search_agent
 
 # --- Configuration ---
 MODEL = "gpt-oss:120b-cloud"
@@ -18,7 +18,10 @@ SYSTEM_MESSAGE = (
     "You can answer general questions directly. "
     "For weather-related questions, delegate to the weather agent using the ask_weather_agent tool. "
     "For math calculations, delegate to the calculator agent using the ask_calc_agent tool. "
-    "For stock prices or company share information, delegate to the stock agent using the ask_stock_agent tool."
+    "For stock prices or company share information, first try the stock agent using the ask_stock_agent tool. "
+    "If the stock agent cannot find the information, follow up by delegating to the web search agent using ask_web_search_agent tool to find the stock price online. "
+    "For questions requiring current/live information, latest news, or recent events, delegate to the web search agent using the ask_web_search_agent tool. "
+    "Keep your final responses concise, under 500 characters. No markdown formatting."
 )
 
 
@@ -31,7 +34,7 @@ llm = ChatOllama(
 
 orchestrator = create_agent(
     model=llm,
-    tools=[ask_weather_agent, ask_calc_agent, ask_stock_agent],
+    tools=[ask_weather_agent, ask_calc_agent, ask_stock_agent, ask_web_search_agent],
     system_prompt=SYSTEM_MESSAGE
 )
 

@@ -44,3 +44,17 @@ def ask_stock_agent(query: str) -> str:
     result = stock_run(query)
     print(f"  [Stock Agent] Returning: {result}")
     return result
+
+
+@tool
+def ask_web_search_agent(query: str) -> str:
+    """Delegate questions requiring live internet search to the web search specialist agent.
+    Use this when the user asks about current events, latest news, recent updates,
+    or any information that requires up-to-date internet search.
+    Pass the user's full question as the query.
+    """
+    from agents.web_search_agent import run as web_search_run
+    print(f"\n  [Web Search Agent] Received: {query}")
+    result = web_search_run(query)
+    print(f"  [Web Search Agent] Returning: {result}")
+    return result
