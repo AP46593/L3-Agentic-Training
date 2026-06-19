@@ -4,11 +4,7 @@ weather.py - Tool to fetch current weather for a city using Open-Meteo API.
 
 import unicodedata
 import requests
-import urllib3
 from langchain_core.tools import tool
-
-# Suppress SSL verification warnings (corporate proxy)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def _normalize(text: str) -> str:
@@ -30,7 +26,7 @@ def get_weather(city: str) -> str:
 
         for attempt in attempts:
             geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={attempt}&count=1"
-            geo = requests.get(geo_url, verify=False).json()
+            geo = requests.get(geo_url).json()
             if geo.get("results"):
                 geo_result = geo["results"][0]
                 break
@@ -46,7 +42,7 @@ def get_weather(city: str) -> str:
             f"https://api.open-meteo.com/v1/forecast"
             f"?latitude={lat}&longitude={lon}&current_weather=true"
         )
-        weather = requests.get(weather_url, verify=False).json()
+        weather = requests.get(weather_url).json()
         cw = weather["current_weather"]
 
         return (

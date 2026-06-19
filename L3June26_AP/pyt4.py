@@ -1,7 +1,7 @@
 """
-pyt3.py - Multi-agent orchestrator.
-Primary chat agent that delegates to specialist agents:
-  - Weather, Calculator, Stock, Web Search
+pyt4.py - Multi-agent orchestrator with Tavily web search.
+Same as pyt3 but uses Tavily instead of DuckDuckGo for internet search.
+Agents: Weather, Calculator, Stock, Tavily Web Search.
 Traced with Opik for observability.
 """
 
@@ -14,10 +14,29 @@ load_dotenv()
 from opik.integrations.langchain import OpikTracer
 from langchain_ollama import ChatOllama
 from langchain.agents import create_agent
-from tools.agent_tools import ask_weather_agent, ask_calc_agent, ask_stock_agent, ask_web_search_agent
+from langchain_core.tools import tool
+
+# Import existing agent tools
+from tools.agent_tools import ask_weather_agent, ask_calc_agent, ask_stock_agent
 
 # --- Opik Tracer ---
 opik_tracer = OpikTracer()
+
+
+# --- Tavily Search Agent Tool ---
+@tool
+def ask_tavily_search_agent(query: str) -> str:
+    """Delegate questions requiring live internet search to the Tavily web search agent.
+    Use this when the user asks about current events, latest news, recent updates,
+    or any information that requires up-to-date internet search.
+    Pass the user's full question as the query.
+    """
+    from agents.tavily_search_agent import run as tavily_run
+    print(f"\n  [Tavily Search Agent] Received: {query}")
+    result = tavily_run(query)
+    print(f"  [Tavily Search Agent] Returning: {result}")
+    return result
+
 
 # --- Configuration ---
 MODEL = "gpt-oss:120b-cloud"
@@ -29,8 +48,8 @@ SYSTEM_MESSAGE = (
     "For weather-related questions, delegate to the weather agent using the ask_weather_agent tool. "
     "For math calculations, delegate to the calculator agent using the ask_calc_agent tool. "
     "For stock prices or company share information, first try the stock agent using the ask_stock_agent tool. "
-    "If the stock agent cannot find the information, follow up by delegating to the web search agent using ask_web_search_agent tool to find the stock price online. "
-    "For questions requiring current/live information, latest news, or recent events, delegate to the web search agent using the ask_web_search_agent tool. "
+    "If the stock agent cannot find the information, follow up by delegating to the Tavily search agent to find it online. "
+    "For questions requiring current/live information, latest news, or recent events, delegate to the Tavily search agent using the ask_tavily_search_agent tool. "
     "Keep your final responses concise, under 500 characters. No markdown formatting."
 )
 
@@ -44,7 +63,7 @@ llm = ChatOllama(
 
 orchestrator = create_agent(
     model=llm,
-    tools=[ask_weather_agent, ask_calc_agent, ask_stock_agent, ask_web_search_agent],
+    tools=[ask_weather_agent, ask_calc_agent, ask_stock_agent, ask_tavily_search_agent],
     system_prompt=SYSTEM_MESSAGE
 )
 
@@ -96,7 +115,7 @@ def chat(user_input: str):
 
 
 if __name__ == "__main__":
-    print("=== Orchestrator Agent ===")
+    print("=== Orchestrator Agent (Tavily) ===")
     print(f"Model: {MODEL} | Temperature: {TEMPERATURE}")
     print("I can chat or delegate to specialist agents.")
     print("Type 'quit' to exit.\n")
